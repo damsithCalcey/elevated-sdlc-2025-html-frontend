@@ -1,190 +1,477 @@
 // App State
-let todos = [];
+let tasks = [];
 let currentFilter = "all";
+let editingTaskId = null;
 let nextId = 1;
 
 // DOM Element references
-const todoInput = document.getElementById("todoInput");
-const addBtn = document.getElementById("addBtn");
-const todoList = document.getElementById("todoList");
+const createTaskBtn = document.getElementById("createTaskBtn");
+const taskModal = document.getElementById("taskModal");
+const viewModal = document.getElementById("viewModal");
+const confirmModal = document.getElementById("confirmModal");
+const taskForm = document.getElementById("taskForm");
+const taskList = document.getElementById("taskList");
 const filterBtns = document.querySelectorAll(".filter-btn");
-const taskCount = document.getElementById("taskCount");
-const clearCompletedBtn = document.getElementById("clearCompleted");
 const emptyState = document.getElementById("emptyState");
 
-function init() {
-  loadTodosFromStorage();
+// Form element references
+const modalTitle = document.getElementById("modalTitle");
+const taskTitle = document.getElementById("taskTitle");
+const taskDescription = document.getElementById("taskDescription");
+const taskDueDate = document.getElementById("taskDueDate");
+const titleCount = document.getElementById("titleCount");
+const descCount = document.getElementById("descCount");
+const saveBtn = document.getElementById("saveBtn");
 
-  addBtn.addEventListener("click", addTodo);
-  todoInput.addEventListener("keypress", handleKeyPress);
-  todoInput.addEventListener("input", handleInputChange);
+// Stats elements references
+const totalTasks = document.getElementById("totalTasks");
+const pendingTasks = document.getElementById("pendingTasks");
+const completedTasks = document.getElementById("completedTasks");
+const overdueTasks = document.getElementById("overdueTasks");
+
+function init() {
+  loadTasksFromStorage();
+  setupEventListeners();
+  renderTasks();
+  updateStats();
+  updateEmptyState();
+  setMinDate();
+}
+
+function setMinDate() {
+  const today = new Date().toISOString().split("T")[0];
+  taskDueDate.min = today;
+}
+
+function setupEventListeners() {
+  // Main buttons
+  createTaskBtn.addEventListener("click", () => openTaskModal());
+
+  // Modal close buttons
+  document
+    .getElementById("closeModal")
+    .addEventListener("click", closeTaskModal);
+  document
+    .getElementById("closeViewModal")
+    .addEventListener("click", closeViewModal);
+  document
+    .getElementById("cancelBtn")
+    .addEventListener("click", closeTaskModal);
+
+  taskForm.addEventListener("submit", handleFormSubmit);
+
+  taskTitle.addEventListener("input", updateCharCount);
+  taskDescription.addEventListener("input", updateCharCount);
 
   filterBtns.forEach((btn) => {
     btn.addEventListener("click", handleFilterChange);
   });
 
-  clearCompletedBtn.addEventListener("click", clearCompleted);
+  // View modal actions
+  document
+    .getElementById("editTaskBtn")
+    .addEventListener("click", handleEditFromView);
+  document
+    .getElementById("deleteTaskBtn")
+    .addEventListener("click", handleDeleteFromView);
+  document
+    .getElementById("completeTaskBtn")
+    .addEventListener("click", handleCompleteFromView);
 
-  renderTodos();
-  updateStats();
-  updateEmptyState();
+  // Confirmation modal
+  document
+    .getElementById("confirmCancel")
+    .addEventListener("click", closeConfirmModal);
+  document
+    .getElementById("confirmAction")
+    .addEventListener("click", handleConfirmAction);
+
+  // Close modals when clicking outside
+  window.addEventListener("click", handleOutsideClick);
+
+  // Keyboard shortcuts
+  document.addEventListener("keydown", handleKeyboardShortcuts);
 }
 
-function handleInputChange() {
-  const hasText = todoInput.value.trim().length > 0;
-  addBtn.disabled = !hasText;
-}
-
-function handleKeyPress(e) {
-  if (e.key === "Enter" && !addBtn.disabled) {
-    addTodo();
+function handleKeyboardShortcuts(e) {
+  if (e.key === "Escape") {
+    closeAllModals();
+  }
+  if (e.ctrlKey && e.key === "n") {
+    e.preventDefault();
+    openTaskModal();
   }
 }
 
-function addTodo() {
-  const text = todoInput.value.trim();
+function closeAllModals() {
+  closeTaskModal();
+  closeViewModal();
+  closeConfirmModal();
+}
 
-  if (text === "") {
+function handleOutsideClick(e) {
+  if (e.target === taskModal) closeTaskModal();
+  if (e.target === viewModal) closeViewModal();
+  if (e.target === confirmModal) closeConfirmModal();
+}
+
+function openTaskModal(taskId = null) {
+  editingTaskId = taskId;
+
+  if (taskId) {
+    const task = tasks.find((t) => t.id === taskId);
+    if (task) {
+      modalTitle.textContent = "Edit Task";
+      taskTitle.value = task.title;
+      taskDescription.value = task.description || "";
+      taskDueDate.value = task.dueDate || "";
+      saveBtn.textContent = "Update Task";
+    }
+  } else {
+    modalTitle.textContent = "Create New Task";
+    taskForm.reset();
+    saveBtn.textContent = "Save Task";
+  }
+
+  updateCharCount();
+  taskModal.classList.add("show");
+  taskTitle.focus();
+}
+
+function closeTaskModal() {
+  taskModal.classList.remove("show");
+  taskForm.reset();
+  editingTaskId = null;
+}
+
+function openViewModal(taskId) {
+  const task = tasks.find((t) => t.id === taskId);
+  if (!task) return;
+
+  document.getElementById("viewTitle").textContent = task.title;
+  document.getElementById("viewDescription").textContent =
+    task.description || "No description provided";
+  document.getElementById("viewDueDate").textContent = task.dueDate
+    ? formatDate(task.dueDate)
+    : "No due date set";
+
+  const statusText = task.completed
+    ? "Completed"
+    : isOverdue(task)
+    ? "Overdue"
+    : "Pending";
+  document.getElementById("viewStatus").textContent = statusText;
+
+  const editBtn = document.getElementById("editTaskBtn");
+  const completeBtn = document.getElementById("completeTaskBtn");
+
+  editBtn.style.display = task.completed ? "none" : "inline-block";
+  completeBtn.style.display = task.completed ? "none" : "inline-block";
+
+  editBtn.dataset.taskId = taskId;
+  document.getElementById("deleteTaskBtn").dataset.taskId = taskId;
+  completeBtn.dataset.taskId = taskId;
+
+  viewModal.classList.add("show");
+}
+
+function closeViewModal() {
+  viewModal.classList.remove("show");
+}
+
+function handleFormSubmit(e) {
+  e.preventDefault();
+
+  const title = taskTitle.value.trim();
+  const description = taskDescription.value.trim();
+  const dueDate = taskDueDate.value;
+
+  if (!title) {
+    alert("Title is required");
+    taskTitle.focus();
     return;
   }
 
-  const newTodo = {
+  // Validate due date is not in the past
+  if (dueDate && new Date(dueDate) < new Date().setHours(0, 0, 0, 0)) {
+    alert("Due date cannot be in the past");
+    taskDueDate.focus();
+    return;
+  }
+
+  if (editingTaskId) {
+    updateTask(editingTaskId, { title, description, dueDate });
+  } else {
+    createTask({ title, description, dueDate });
+  }
+
+  closeTaskModal();
+}
+
+function createTask(taskData) {
+  const newTask = {
     id: nextId++,
-    text: text,
+    title: taskData.title,
+    description: taskData.description,
+    dueDate: taskData.dueDate,
     completed: false,
     createdAt: new Date().toISOString(),
   };
 
-  todos.unshift(newTodo);
-  todoInput.value = "";
-  addBtn.disabled = true;
-
-  saveTodosToStorage();
-  renderTodos();
+  tasks.push(newTask);
+  saveTasksToStorage();
+  renderTasks();
   updateStats();
   updateEmptyState();
-
-  todoInput.focus();
 }
 
-function toggleTodo(id) {
-  const todo = todos.find((t) => t.id === id);
-  if (todo) {
-    todo.completed = !todo.completed;
-    saveTodosToStorage();
-    renderTodos();
+function updateTask(taskId, updates) {
+  const taskIndex = tasks.findIndex((t) => t.id === taskId);
+  if (taskIndex !== -1) {
+    tasks[taskIndex] = { ...tasks[taskIndex], ...updates };
+    saveTasksToStorage();
+    renderTasks();
     updateStats();
+    updateEmptyState();
   }
 }
 
-function deleteTodo(id) {
-  const todoElement = document.querySelector(`[data-id="${id}"]`);
+function deleteTask(taskId) {
+  tasks = tasks.filter((t) => t.id !== taskId);
+  saveTasksToStorage();
+  renderTasks();
+  updateStats();
+  updateEmptyState();
+}
 
-  if (todoElement) {
-    todoElement.classList.add("removing");
-    setTimeout(() => {
-      todos = todos.filter((t) => t.id !== id);
-      saveTodosToStorage();
-      renderTodos();
-      updateStats();
-      updateEmptyState();
-    }, 300);
+function completeTask(taskId) {
+  const task = tasks.find((t) => t.id === taskId);
+  if (task && !task.completed) {
+    showConfirmModal(
+      "Mark the task as completed?",
+      "Are you sure you want to mark this task as completed? You cannot undo this action.",
+      () => {
+        task.completed = true;
+        task.completedAt = new Date().toISOString();
+        saveTasksToStorage();
+        renderTasks();
+        updateStats();
+        updateEmptyState();
+        closeViewModal();
+      }
+    );
   }
+}
+
+function showConfirmModal(title, message, onConfirm) {
+  document.getElementById("confirmTitle").textContent = title;
+  document.getElementById("confirmMessage").textContent = message;
+
+  const confirmBtn = document.getElementById("confirmAction");
+  confirmBtn.onclick = () => {
+    onConfirm();
+    closeConfirmModal();
+  };
+
+  confirmModal.classList.add("show");
+}
+
+function closeConfirmModal() {
+  confirmModal.classList.remove("show");
+}
+
+function handleEditFromView(e) {
+  const taskId = parseInt(e.target.dataset.taskId);
+  closeViewModal();
+  openTaskModal(taskId);
+}
+
+function handleDeleteFromView(e) {
+  const taskId = parseInt(e.target.dataset.taskId);
+  const task = tasks.find((t) => t.id === taskId);
+
+  showConfirmModal(
+    "Delete Task",
+    `Are you sure you want to delete "${task.title}"? This action cannot be undone.`,
+    () => {
+      deleteTask(taskId);
+      closeViewModal();
+    }
+  );
+}
+
+function handleCompleteFromView(e) {
+  const taskId = parseInt(e.target.dataset.taskId);
+  completeTask(taskId);
+}
+
+function handleConfirmAction() {
+  // This will be set by showConfirmModal
 }
 
 function handleFilterChange(e) {
   filterBtns.forEach((btn) => btn.classList.remove("active"));
   e.target.classList.add("active");
   currentFilter = e.target.dataset.filter;
-  renderTodos();
+  renderTasks();
+  updateEmptyState();
 }
 
-function getFilteredTodos() {
+function isOverdue(task) {
+  if (!task.dueDate || task.completed) return false;
+  return new Date(task.dueDate) < new Date().setHours(0, 0, 0, 0);
+}
+
+function getFilteredTasks() {
+  let filtered = [...tasks];
   switch (currentFilter) {
-    case "active":
-      return todos.filter((todo) => !todo.completed);
+    case "pending":
+      filtered = filtered.filter((task) => !task.completed);
+      break;
     case "completed":
-      return todos.filter((todo) => todo.completed);
-    default:
-      return todos;
+      filtered = filtered.filter((task) => task.completed);
+      break;
+    case "overdue":
+      filtered = filtered.filter((task) => isOverdue(task));
+      break;
   }
+
+  // Sort by due date (overdue first, then by date)
+  filtered.sort((a, b) => {
+    const aOverdue = isOverdue(a);
+    const bOverdue = isOverdue(b);
+
+    // Overdue tasks first
+    if (aOverdue && !bOverdue) return -1;
+    if (!aOverdue && bOverdue) return 1;
+
+    // Then by due date
+    if (a.dueDate && b.dueDate) {
+      return new Date(a.dueDate) - new Date(b.dueDate);
+    }
+    if (a.dueDate && !b.dueDate) return -1;
+    if (!a.dueDate && b.dueDate) return 1;
+
+    // Finally by creation date
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+
+  return filtered;
 }
 
-function renderTodos() {
-  const filteredTodos = getFilteredTodos();
-  todoList.innerHTML = "";
+function renderTasks() {
+  const filteredTasks = getFilteredTasks();
+  taskList.innerHTML = "";
 
-  filteredTodos.forEach((todo) => {
-    const todoElement = createTodoElement(todo);
-    todoList.appendChild(todoElement);
+  filteredTasks.forEach((task) => {
+    const taskElement = createTaskCard(task);
+    taskList.appendChild(taskElement);
   });
 }
 
-function createTodoElement(todo) {
-  const li = document.createElement("li");
-  li.className = `todo-item ${todo.completed ? "completed" : ""}`;
-  li.dataset.id = todo.id;
+function createTaskCard(task) {
+  const card = document.createElement("div");
+  card.className = `task-card ${task.completed ? "completed" : ""} ${
+    isOverdue(task) ? "overdue" : ""
+  }`;
+  card.onclick = () => openViewModal(task.id);
 
-  li.innerHTML = `
-        <div class="todo-checkbox ${todo.completed ? "checked" : ""}" 
-             onclick="toggleTodo(${todo.id})">
-        </div>
-        <span class="todo-text">${createDiv(todo.text)}</span>
-        <div class="todo-actions">
-            <button class="delete-btn" onclick="deleteTodo(${
-              todo.id
-            })" title="Delete task">
-                🗑️
-            </button>
+  const status = task.completed
+    ? "completed"
+    : isOverdue(task)
+    ? "overdue"
+    : "pending";
+  const statusText = status.charAt(0).toUpperCase() + status.slice(1);
+
+  const dueDateText = task.dueDate ? formatDate(task.dueDate) : "No due date";
+  const dueDateClass = isOverdue(task) ? "overdue" : "";
+
+  card.innerHTML = `
+        <div class="task-status ${status}">${statusText}</div>
+        <h3 class="task-title"><div>${task.title}</div></h3>
+        ${
+          task.description
+            ? `<p class="task-description"><div>${task.description}</div></p>`
+            : ""
+        }
+        <div class="task-meta">
+            <div class="task-due-date ${dueDateClass}">
+                📅 ${dueDateText}
+            </div>
+            <div class="task-actions" onclick="event.stopPropagation()">
+                ${
+                  !task.completed
+                    ? `
+                    <button class="action-btn edit" onclick="openTaskModal(${task.id})" title="Edit task">
+                        ✏️
+                    </button>
+                    <button class="action-btn complete" onclick="completeTask(${task.id})" title="Mark as completed">
+                        ✅
+                    </button>
+                `
+                    : ""
+                }
+                <button class="action-btn delete" onclick="confirmDelete(${
+                  task.id
+                })" title="Delete task">
+                    🗑️
+                </button>
+            </div>
         </div>
     `;
-
-  return li;
+  return card;
 }
 
-function createDiv(text) {
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
+function confirmDelete(taskId) {
+  const task = tasks.find((t) => t.id === taskId);
+  showConfirmModal(
+    "Delete Task",
+    `Are you sure you want to delete "${task.title}"? This action cannot be undone.`,
+    () => deleteTask(taskId)
+  );
+}
+
+function updateCharCount() {
+  titleCount.textContent = taskTitle.value.length;
+  descCount.textContent = taskDescription.value.length;
 }
 
 function updateStats() {
-  const activeTodos = todos.filter((todo) => !todo.completed);
-  const count = activeTodos.length;
+  const total = tasks.length;
+  const pending = tasks.filter((task) => !task.completed).length;
+  const completed = tasks.filter((task) => task.completed).length;
+  const overdue = tasks.filter((task) => isOverdue(task)).length;
 
-  if (count === 0) {
-    taskCount.textContent = "No tasks remaining";
-  } else if (count === 1) {
-    taskCount.textContent = "1 task remaining";
-  } else {
-    taskCount.textContent = `${count} tasks remaining`;
-  }
-
-  const completedTodos = todos.filter((todo) => todo.completed);
-  clearCompletedBtn.disabled = completedTodos.length === 0;
+  totalTasks.textContent = total;
+  pendingTasks.textContent = pending;
+  completedTasks.textContent = completed;
+  overdueTasks.textContent = overdue;
 }
 
 function updateEmptyState() {
-  const filteredTodos = getFilteredTodos();
+  const filteredTasks = getFilteredTasks();
 
-  if (filteredTodos.length === 0) {
+  if (filteredTasks.length === 0) {
     emptyState.classList.remove("hidden");
-
-    const emptyTitle = emptyState.querySelector("h3");
-    const emptyText = emptyState.querySelector("p");
+    const title = emptyState.querySelector("h3");
+    const text = emptyState.querySelector("p");
 
     switch (currentFilter) {
-      case "active":
-        emptyTitle.textContent = "No active tasks!";
-        emptyText.textContent = "All your tasks are completed 🎉";
+      case "pending":
+        title.textContent = "No pending tasks!";
+        text.textContent = "All your tasks are completed 🎉";
         break;
       case "completed":
-        emptyTitle.textContent = "No completed tasks!";
-        emptyText.textContent = "Complete some tasks to see them here";
+        title.textContent = "No completed tasks!";
+        text.textContent = "Complete some tasks to see them here";
+        break;
+      case "overdue":
+        title.textContent = "No overdue tasks!";
+        text.textContent = "Great job staying on track! 👏";
         break;
       default:
-        emptyTitle.textContent = "No tasks yet!";
-        emptyText.textContent = "Add a task above to get started";
+        title.textContent = "No tasks found!";
+        text.textContent = "Create your first task to get started";
         break;
     }
   } else {
@@ -192,99 +479,152 @@ function updateEmptyState() {
   }
 }
 
-function clearCompleted() {
-  const completedTodos = todos.filter((todo) => todo.completed);
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
 
-  if (completedTodos.length > 0) {
-    const confirmMessage =
-      completedTodos.length === 1
-        ? "Are you sure you want to delete this completed task?"
-        : `Are you sure you want to delete ${completedTodos.length} completed tasks?`;
+  const dateOnly = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
+  const todayOnly = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+  const tomorrowOnly = new Date(
+    tomorrow.getFullYear(),
+    tomorrow.getMonth(),
+    tomorrow.getDate()
+  );
 
-    if (confirm(confirmMessage)) {
-      todos = todos.filter((todo) => !todo.completed);
-      saveTodosToStorage();
-      renderTodos();
-      updateStats();
-      updateEmptyState();
-    }
+  if (dateOnly.getTime() === todayOnly.getTime()) {
+    return "Today";
+  } else if (dateOnly.getTime() === tomorrowOnly.getTime()) {
+    return "Tomorrow";
+  } else {
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: date.getFullYear() !== today.getFullYear() ? "numeric" : undefined,
+    });
   }
 }
 
-function saveTodosToStorage() {
+function saveTasksToStorage() {
   try {
-    localStorage.setItem("todos", JSON.stringify(todos));
-    localStorage.setItem("nextId", nextId.toString());
+    localStorage.setItem("advancedTasks", JSON.stringify(tasks));
+    localStorage.setItem("nextTaskId", nextId.toString());
   } catch (error) {
-    console.error("Failed to save todos to localStorage:", error);
+    console.error("Failed to save tasks to localStorage:", error);
   }
 }
 
-function loadTodosFromStorage() {
+function loadTasksFromStorage() {
   try {
-    const savedTodos = localStorage.getItem("todos");
-    const savedNextId = localStorage.getItem("nextId");
+    const savedTasks = localStorage.getItem("advancedTasks");
+    const savedNextId = localStorage.getItem("nextTaskId");
 
-    if (savedTodos) {
-      todos = JSON.parse(savedTodos);
+    if (savedTasks) {
+      tasks = JSON.parse(savedTasks);
     }
 
     if (savedNextId) {
       nextId = parseInt(savedNextId, 10);
     }
 
-    // Ensure that the nextId is always higher than any existing todo id
-    if (todos.length > 0) {
-      const maxId = Math.max(...todos.map((todo) => todo.id));
+    // Ensure nextId is always higher than any existing task id
+    if (tasks.length > 0) {
+      const maxId = Math.max(...tasks.map((task) => task.id));
       nextId = Math.max(nextId, maxId + 1);
     }
   } catch (error) {
-    console.error("Failed to load todos from localStorage:", error);
-    todos = [];
+    console.error("Failed to load tasks from localStorage:", error);
+    tasks = [];
     nextId = 1;
   }
 }
 
 // Demo data function
 function addDemoData() {
-  const demoTodos = [
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const nextWeek = new Date(today);
+  nextWeek.setDate(nextWeek.getDate() + 7);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const demoTasks = [
     {
       id: nextId++,
-      text: "Learn HTML basics",
-      completed: true,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: nextId++,
-      text: "Style with CSS",
-      completed: true,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: nextId++,
-      text: "Add JavaScript functionality",
+      title: "Complete project proposal",
+      description:
+        "Finish the detailed project proposal for the new client including timeline, budget, and deliverables.",
+      dueDate: yesterday.toISOString().split("T")[0],
       completed: false,
       createdAt: new Date().toISOString(),
     },
     {
       id: nextId++,
-      text: "Convert to React components",
+      title: "Team meeting preparation",
+      description:
+        "Prepare agenda and presentation slides for the weekly team meeting.",
+      dueDate: today.toISOString().split("T")[0],
       completed: false,
       createdAt: new Date().toISOString(),
     },
     {
       id: nextId++,
-      text: "Add React state management",
+      title: "Code review for React components",
+      description:
+        "Review pull requests for the new React components and provide feedback.",
+      dueDate: tomorrow.toISOString().split("T")[0],
+      completed: false,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: nextId++,
+      title: "Update documentation",
+      description:
+        "Update the API documentation with the latest endpoints and examples.",
+      dueDate: nextWeek.toISOString().split("T")[0],
+      completed: true,
+      createdAt: new Date().toISOString(),
+      completedAt: new Date().toISOString(),
+    },
+    {
+      id: nextId++,
+      title: "Learn advanced CSS techniques",
+      description:
+        "Study CSS Grid, Flexbox, and modern layout techniques for better responsive design.",
+      dueDate: "",
       completed: false,
       createdAt: new Date().toISOString(),
     },
   ];
 
-  todos = [...demoTodos, ...todos];
-  saveTodosToStorage();
-  renderTodos();
+  tasks = [...demoTasks, ...tasks];
+  saveTasksToStorage();
+  renderTasks();
   updateStats();
   updateEmptyState();
+}
+
+function clearAllTasks() {
+  if (
+    confirm("Are you sure you want to delete ALL tasks? This cannot be undone.")
+  ) {
+    tasks = [];
+    nextId = 1;
+    saveTasksToStorage();
+    renderTasks();
+    updateStats();
+    updateEmptyState();
+  }
 }
 
 if (document.readyState === "loading") {
@@ -295,15 +635,4 @@ if (document.readyState === "loading") {
 
 // A few convenience functions that are exposed globally
 window.addDemoData = addDemoData;
-window.clearAllTodos = function () {
-  if (
-    confirm("Are you sure you want to delete ALL todos? This cannot be undone.")
-  ) {
-    todos = [];
-    nextId = 1;
-    saveTodosToStorage();
-    renderTodos();
-    updateStats();
-    updateEmptyState();
-  }
-};
+window.clearAllTasks = clearAllTasks;

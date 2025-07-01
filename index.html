@@ -14,55 +14,141 @@
         </header>
 
         <main>
-            <!-- Add Todo Form -->
-            <section class="add-todo-section">
-                <div class="input-container">
-                    <input 
-                        type="text" 
-                        id="todoInput" 
-                        placeholder="What needs to be done?" 
-                        maxlength="100"
-                    >
-                    <button id="addBtn" class="add-btn">
-                        <span>Add Task</span>
-                        <span class="btn-icon">+</span>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Filter Controls -->
-            <section class="filter-section">
+            <!-- Action Bar -->
+            <section class="action-bar">
+                <button id="createTaskBtn" class="primary-btn">
+                    <span class="btn-icon">+</span>
+                    <span>Create New Task</span>
+                </button>
+                
                 <div class="filter-controls">
-                    <button class="filter-btn active" data-filter="all">All</button>
-                    <button class="filter-btn" data-filter="active">Active</button>
+                    <button class="filter-btn active" data-filter="all">All Tasks</button>
+                    <button class="filter-btn" data-filter="pending">Pending</button>
                     <button class="filter-btn" data-filter="completed">Completed</button>
-                </div>
-                <div class="stats">
-                    <span id="taskCount">0 tasks remaining</span>
+                    <button class="filter-btn" data-filter="overdue">Overdue</button>
                 </div>
             </section>
 
-            <!-- Todo List -->
-            <section class="todo-list-section">
-                <ul id="todoList" class="todo-list">
-                    <!-- Todos will be dynamically added here -->
-                </ul>
+            <!-- Task Stats -->
+            <section class="stats-section">
+                <div class="stat-card">
+                    <span class="stat-number" id="totalTasks">0</span>
+                    <span class="stat-label">Total Tasks</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="pendingTasks">0</span>
+                    <span class="stat-label">Pending</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="completedTasks">0</span>
+                    <span class="stat-label">Completed</span>
+                </div>
+                <div class="stat-card overdue">
+                    <span class="stat-number" id="overdueTasks">0</span>
+                    <span class="stat-label">Overdue</span>
+                </div>
+            </section>
+
+            <!-- Task List -->
+            <section class="task-list-section">
+                <div id="taskList" class="task-list">
+                    <!-- Task cards will be dynamically added here -->
+                </div>
                 
                 <!-- Empty State -->
                 <div id="emptyState" class="empty-state">
                     <div class="empty-icon">📋</div>
-                    <h3>No tasks yet!</h3>
-                    <p>Add a task above to get started</p>
+                    <h3>No tasks found!</h3>
+                    <p>Create your first task to get started</p>
                 </div>
             </section>
-
-            <!-- Actions -->
-            <section class="actions-section">
-                <button id="clearCompleted" class="secondary-btn">
-                    Clear Completed
-                </button>
-            </section>
         </main>
+    </div>
+
+    <!-- Task Form Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Create New Task</h2>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <form id="taskForm" class="task-form">
+                <div class="form-group">
+                    <label for="taskTitle">Title <span class="required">*</span></label>
+                    <input type="text" id="taskTitle" maxlength="250" required>
+                    <small class="char-count"><span id="titleCount">0</span>/250</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="taskDescription">Description</label>
+                    <textarea id="taskDescription" maxlength="750" rows="4"></textarea>
+                    <small class="char-count"><span id="descCount">0</span>/750</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="taskDueDate">Due Date</label>
+                    <input type="date" id="taskDueDate">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="secondary-btn" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="primary-btn" id="saveBtn">Save Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Task View Modal -->
+    <div id="viewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Task Details</h2>
+                <button class="close-btn" id="closeViewModal">&times;</button>
+            </div>
+            <div class="task-details">
+                <div class="detail-group">
+                    <label>Title</label>
+                    <p id="viewTitle"></p>
+                </div>
+                
+                <div class="detail-group">
+                    <label>Description</label>
+                    <p id="viewDescription" class="description-text"></p>
+                </div>
+                
+                <div class="detail-group">
+                    <label>Due Date</label>
+                    <p id="viewDueDate"></p>
+                </div>
+                
+                <div class="detail-group">
+                    <label>Status</label>
+                    <p id="viewStatus"></p>
+                </div>
+                
+                <div class="view-actions">
+                    <button type="button" class="secondary-btn" id="editTaskBtn">Edit Task</button>
+                    <button type="button" class="danger-btn" id="deleteTaskBtn">Delete Task</button>
+                    <button type="button" class="success-btn" id="completeTaskBtn">Mark as Completed</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h2 id="confirmTitle">Confirm Action</h2>
+            </div>
+            <div class="confirm-content">
+                <p id="confirmMessage">Are you sure you want to perform this action?</p>
+                <div class="confirm-actions">
+                    <button type="button" class="secondary-btn" id="confirmCancel">Cancel</button>
+                    <button type="button" class="danger-btn" id="confirmAction">Confirm</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="script.js"></script>
