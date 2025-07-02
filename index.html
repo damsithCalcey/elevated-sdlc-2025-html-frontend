@@ -3,150 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TODO App - HTML/CSS/JS</title>
+    <title>Task Board - Project Management Dashboard</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>📝 TODO App</h1>
-            <p>A simple task manager built with HTML, CSS & JavaScript</p>
-        </header>
-
-        <main>
-            <!-- Action Bar -->
-            <section class="action-bar">
-                <button id="createTaskBtn" class="primary-btn">
-                    <span class="btn-icon">+</span>
-                    <span>Create New Task</span>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <!-- User Profile Section -->
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <img src="https://images.unsplash.com/photo-1494790108755-2616b2e2b26b?w=40&h=40&fit=crop&crop=face" alt="Nancy Martins">
+                </div>
+                <div class="user-info">
+                    <h3>Nancy Martins</h3>
+                    <p>Designer</p>
+                </div>
+                <button class="profile-toggle">
+                    <i class="fas fa-chevron-down"></i>
                 </button>
-                
-                <div class="filter-controls">
-                    <button class="filter-btn active" data-filter="all">All Tasks</button>
-                    <button class="filter-btn" data-filter="pending">Pending</button>
-                    <button class="filter-btn" data-filter="completed">Completed</button>
-                    <button class="filter-btn" data-filter="overdue">Overdue</button>
-                </div>
-            </section>
+            </div>
 
-            <!-- Task Stats -->
-            <section class="stats-section">
-                <div class="stat-card">
-                    <span class="stat-number" id="totalTasks">0</span>
-                    <span class="stat-label">Total Tasks</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number" id="pendingTasks">0</span>
-                    <span class="stat-label">Pending</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-number" id="completedTasks">0</span>
-                    <span class="stat-label">Completed</span>
-                </div>
-                <div class="stat-card overdue">
-                    <span class="stat-number" id="overdueTasks">0</span>
-                    <span class="stat-label">Overdue</span>
-                </div>
-            </section>
+            <!-- Dashboard Section -->
+            <div class="nav-section">
+                <h4 class="nav-heading">DASHBOARDS</h4>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <i class="fas fa-inbox"></i>
+                        <span>Inbox</span>
+                        <span class="badge">4</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-folder"></i>
+                        <span>Drive Files</span>
+                        <span class="badge">435</span>
+                    </li>
+                    <li class="nav-item active">
+                        <i class="fas fa-columns"></i>
+                        <span>Boards</span>
+                        <span class="badge">6</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-bell"></i>
+                        <span>Updates</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Analytics</span>
+                        <span class="badge">2</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-desktop"></i>
+                        <span>CRM Dashboard</span>
+                        <span class="badge">2</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Ecommerce</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-coins"></i>
+                        <span>Cryptocurrency</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-project-diagram"></i>
+                        <span>Projects</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-store"></i>
+                        <span>NFT Marketplace</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                        <span class="badge">3</span>
+                    </li>
+                </ul>
+            </div>
 
-            <!-- Task List -->
-            <section class="task-list-section">
-                <div id="taskList" class="task-list">
-                    <!-- Task cards will be dynamically added here -->
+            <!-- Projects Section -->
+            <div class="nav-section">
+                <h4 class="nav-heading">PROJECTS</h4>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <i class="fas fa-calendar"></i>
+                        <span>Additional Calendar</span>
+                        <span class="badge">6</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-palette"></i>
+                        <span>Brand Logo Design</span>
+                        <span class="badge">11</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>User Research</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Marketing Sales</span>
+                        <span class="badge">22</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-code"></i>
+                        <span>New Project Template</span>
+                        <span class="badge">5</span>
+                    </li>
+                    <li class="nav-item">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Add New Project</span>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <h1>Task Boards</h1>
+                    <button class="edit-btn">
+                        <i class="fas fa-edit"></i>
+                    </button>
                 </div>
-                
-                <!-- Empty State -->
-                <div id="emptyState" class="empty-state">
-                    <div class="empty-icon">📋</div>
-                    <h3>No tasks found!</h3>
-                    <p>Create your first task to get started</p>
+                <div class="header-tabs">
+                    <button class="tab-btn">Timeline</button>
+                    <button class="tab-btn">Calendar</button>
+                    <button class="tab-btn active">Dashboard</button>
+                    <button class="tab-btn">Progress</button>
+                    <button class="tab-btn">Forms</button>
+                    <button class="tab-btn">More</button>
                 </div>
-            </section>
+                <div class="header-right">
+                    <div class="team-avatars">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=30&h=30&fit=crop&crop=face" alt="Team member">
+                        <img src="https://images.unsplash.com/photo-1494790108755-2616b2e2b26b?w=30&h=30&fit=crop&crop=face" alt="Team member">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=30&h=30&fit=crop&crop=face" alt="Team member">
+                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=30&h=30&fit=crop&crop=face" alt="Team member">
+                        <span class="more-count">+6</span>
+                    </div>
+                    <button class="add-member-btn">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Board Controls -->
+            <div class="board-controls">
+                <div class="view-controls">
+                    <button class="view-btn active">
+                        <i class="fas fa-th"></i>
+                        Board View
+                    </button>
+                    <button class="view-btn">
+                        <i class="fas fa-list"></i>
+                        List View
+                    </button>
+                </div>
+                <div class="search-controls">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search Tasks" id="searchInput">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Board -->
+            <div class="task-board">
+                <div class="board-column" data-status="backlog">
+                    <div class="column-header">
+                        <h3>Backlog Tasks</h3>
+                        <span class="task-count">5</span>
+                    </div>
+                    <div class="column-content" id="backlog-tasks">
+                        <!-- Tasks will be dynamically added here -->
+                    </div>
+                    <div class="column-footer">
+                        <button class="add-task-btn" data-status="backlog">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="board-column" data-status="todo">
+                    <div class="column-header">
+                        <h3>To Do Tasks</h3>
+                        <span class="task-count">3</span>
+                    </div>
+                    <div class="column-content" id="todo-tasks">
+                        <!-- Tasks will be dynamically added here -->
+                    </div>
+                    <div class="column-footer">
+                        <button class="add-task-btn" data-status="todo">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="board-column" data-status="progress">
+                    <div class="column-header">
+                        <h3>In Process</h3>
+                        <span class="task-count">2</span>
+                    </div>
+                    <div class="column-content" id="progress-tasks">
+                        <!-- Tasks will be dynamically added here -->
+                    </div>
+                    <div class="column-footer">
+                        <button class="add-task-btn" data-status="progress">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="board-column" data-status="done">
+                    <div class="column-header">
+                        <h3>Done</h3>
+                        <span class="task-count">1</span>
+                    </div>
+                    <div class="column-content" id="done-tasks">
+                        <!-- Tasks will be dynamically added here -->
+                    </div>
+                    <div class="column-footer">
+                        <button class="add-task-btn" data-status="done">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
-    <!-- Task Form Modal -->
-    <div id="taskModal" class="modal">
-        <div class="modal-content">
+    <!-- Add Task Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
             <div class="modal-header">
-                <h2 id="modalTitle">Create New Task</h2>
-                <button class="close-btn" id="closeModal">&times;</button>
+                <h3>Add New Task</h3>
+                <button class="close-modal" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <form id="taskForm" class="task-form">
-                <div class="form-group">
-                    <label for="taskTitle">Title <span class="required">*</span></label>
-                    <input type="text" id="taskTitle" maxlength="250" required>
-                    <small class="char-count"><span id="titleCount">0</span>/250</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="taskDescription">Description</label>
-                    <textarea id="taskDescription" maxlength="750" rows="4"></textarea>
-                    <small class="char-count"><span id="descCount">0</span>/750</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="taskDueDate">Due Date</label>
-                    <input type="date" id="taskDueDate">
-                </div>
-                
-                <div class="form-actions">
-                    <button type="button" class="secondary-btn" id="cancelBtn">Cancel</button>
-                    <button type="submit" class="primary-btn" id="saveBtn">Save Task</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Task View Modal -->
-    <div id="viewModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Task Details</h2>
-                <button class="close-btn" id="closeViewModal">&times;</button>
-            </div>
-            <div class="task-details">
-                <div class="detail-group">
-                    <label>Title</label>
-                    <p id="viewTitle"></p>
-                </div>
-                
-                <div class="detail-group">
-                    <label>Description</label>
-                    <p id="viewDescription" class="description-text"></p>
-                </div>
-                
-                <div class="detail-group">
-                    <label>Due Date</label>
-                    <p id="viewDueDate"></p>
-                </div>
-                
-                <div class="detail-group">
-                    <label>Status</label>
-                    <p id="viewStatus"></p>
-                </div>
-                
-                <div class="view-actions">
-                    <button type="button" class="secondary-btn" id="editTaskBtn">Edit Task</button>
-                    <button type="button" class="danger-btn" id="deleteTaskBtn">Delete Task</button>
-                    <button type="button" class="success-btn" id="completeTaskBtn">Mark as Completed</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Confirmation Modal -->
-    <div id="confirmModal" class="modal">
-        <div class="modal-content small">
-            <div class="modal-header">
-                <h2 id="confirmTitle">Confirm Action</h2>
-            </div>
-            <div class="confirm-content">
-                <p id="confirmMessage">Are you sure you want to perform this action?</p>
-                <div class="confirm-actions">
-                    <button type="button" class="secondary-btn" id="confirmCancel">Cancel</button>
-                    <button type="button" class="danger-btn" id="confirmAction">Confirm</button>
-                </div>
+            <div class="modal-body">
+                <form id="taskForm">
+                    <div class="form-group">
+                        <label for="taskTitle">Task Title</label>
+                        <input type="text" id="taskTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDescription">Description</label>
+                        <textarea id="taskDescription" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskStatus">Status</label>
+                        <select id="taskStatus">
+                            <option value="backlog">Backlog</option>
+                            <option value="todo">To Do</option>
+                            <option value="progress">In Process</option>
+                            <option value="done">Done</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" id="cancelBtn">Cancel</button>
+                        <button type="submit" class="btn-primary">Add Task</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
