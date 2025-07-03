@@ -37,7 +37,7 @@ body {
     margin-bottom: 30px;
 }
 
-.user-avatar .assignee-initials {
+.user-avatar .initials {
     width: 40px;
     height: 40px;
     font-size: 16px;
@@ -464,7 +464,7 @@ body {
     color: #2563eb;
 }
 
-.task-label.progress {
+.task-label.in_progress {
     background-color: #fefce8;
     color: #eab308;
 }
@@ -474,63 +474,20 @@ body {
     color: #22c55e;
 }
 
+.task-due-date {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 500;
+    background-color: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
 .task-footer {
     display: flex;
     align-items: center;
     margin-top: 4px;
-}
-
-.task-assignees {
-    display: flex;
-    align-items: center;
-    gap: -8px;
-}
-
-.task-assignees .assignee-initials {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 2px solid white;
-    margin-left: -8px;
-    background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    font-size: 11px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.task-assignees .assignee-initials:first-child {
-    margin-left: 0;
-}
-
-.task-assignees .assignee-initials:hover {
-    transform: scale(1.1);
-    z-index: 10;
-}
-
-/* Different background colors for variety */
-.task-assignees .assignee-initials:nth-child(1) {
-    background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
-}
-
-.task-assignees .assignee-initials:nth-child(2) {
-    background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
-}
-
-.task-assignees .assignee-initials:nth-child(3) {
-    background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
-}
-
-.task-assignees .assignee-initials:nth-child(4) {
-    background: linear-gradient(45deg, #43e97b 0%, #38f9d7 100%);
-}
-
-.task-assignees .assignee-initials:nth-child(5) {
-    background: linear-gradient(45deg, #fa709a 0%, #fee140 100%);
 }
 
 /* Modal Styles */
