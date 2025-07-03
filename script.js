@@ -32,8 +32,8 @@ class TaskBoard {
                     description: "Create model answer for user authentication",
                     status: "backlog",
                     assignees: [
-                        { name: "John Doe", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=30&h=30&fit=crop&crop=face" },
-                        { name: "Jane Smith", avatar: "https://images.unsplash.com/photo-1494790108755-2616b2e2b26b?w=30&h=30&fit=crop&crop=face" }
+                        { name: "John Doe" },
+                        { name: "Jane Smith" }
                     ],
                     createdAt: new Date('2024-01-15')
                 },
@@ -43,7 +43,7 @@ class TaskBoard {
                     description: "Design and implement calendar, chat and email pages",
                     status: "backlog",
                     assignees: [
-                        { name: "Alice Johnson", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=30&h=30&fit=crop&crop=face" }
+                        { name: "Alice Johnson" }
                     ],
                     createdAt: new Date('2024-01-16')
                 },
@@ -53,7 +53,7 @@ class TaskBoard {
                     description: "Create design prototypes using Figma and Sketch",
                     status: "backlog",
                     assignees: [
-                        { name: "Bob Wilson", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=30&h=30&fit=crop&crop=face" }
+                        { name: "Bob Wilson" }
                     ],
                     createdAt: new Date('2024-01-17')
                 },
@@ -63,7 +63,7 @@ class TaskBoard {
                     description: "Update the email notification process",
                     status: "backlog",
                     assignees: [
-                        { name: "Charlie Brown", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=30&h=30&fit=crop&crop=face" }
+                        { name: "Charlie Brown" }
                     ],
                     createdAt: new Date('2024-01-18')
                 },
@@ -73,7 +73,7 @@ class TaskBoard {
                     description: "Create post-launch reminder system",
                     status: "backlog",
                     assignees: [
-                        { name: "Diana Prince", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=30&h=30&fit=crop&crop=face" }
+                        { name: "Diana Prince" }
                     ],
                     createdAt: new Date('2024-01-19')
                 },
@@ -83,7 +83,7 @@ class TaskBoard {
                     description: "Review and update model answers",
                     status: "todo",
                     assignees: [
-                        { name: "Eve Adams", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=30&h=30&fit=crop&crop=face" }
+                        { name: "Eve Adams" }
                     ],
                     createdAt: new Date('2024-01-20')
                 },
@@ -93,7 +93,7 @@ class TaskBoard {
                     description: "Create login and signup pages",
                     status: "todo",
                     assignees: [
-                        { name: "Frank Miller", avatar: "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=30&h=30&fit=crop&crop=face" }
+                        { name: "Frank Miller" }
                     ],
                     createdAt: new Date('2024-01-21')
                 },
@@ -103,7 +103,7 @@ class TaskBoard {
                     description: "Implement dark mode for profile page",
                     status: "todo",
                     assignees: [
-                        { name: "Grace Kelly", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=30&h=30&fit=crop&crop=face" }
+                        { name: "Grace Kelly" }
                     ],
                     createdAt: new Date('2024-01-22')
                 },
@@ -113,7 +113,7 @@ class TaskBoard {
                     description: "Complete the remaining UI components",
                     status: "todo",
                     assignees: [
-                        { name: "Henry Ford", avatar: "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=30&h=30&fit=crop&crop=face" }
+                        { name: "Henry Ford" }
                     ],
                     createdAt: new Date('2024-01-23')
                 },
@@ -123,7 +123,7 @@ class TaskBoard {
                     description: "Final review of model answers",
                     status: "progress",
                     assignees: [
-                        { name: "Ivy Chen", avatar: "https://images.unsplash.com/photo-1494790108755-2616b2e2b26b?w=30&h=30&fit=crop&crop=face" }
+                        { name: "Ivy Chen" }
                     ],
                     createdAt: new Date('2024-01-24')
                 },
@@ -133,7 +133,7 @@ class TaskBoard {
                     description: "Testing and bug fixes",
                     status: "progress",
                     assignees: [
-                        { name: "Jack Wilson", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=30&h=30&fit=crop&crop=face" }
+                        { name: "Jack Wilson" }
                     ],
                     createdAt: new Date('2024-01-25')
                 },
@@ -143,7 +143,7 @@ class TaskBoard {
                     description: "Design system finalization",
                     status: "done",
                     assignees: [
-                        { name: "Kate Brown", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=30&h=30&fit=crop&crop=face" }
+                        { name: "Kate Brown" }
                     ],
                     createdAt: new Date('2024-01-26')
                 }
@@ -238,8 +238,7 @@ class TaskBoard {
             status,
             assignees: [
                 { 
-                    name: "You", 
-                    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=30&h=30&fit=crop&crop=face" 
+                    name: "You"
                 }
             ],
             createdAt: new Date()
@@ -339,7 +338,7 @@ class TaskBoard {
         taskCard.dataset.taskId = task.id;
 
         const assigneesHTML = task.assignees.map(assignee => 
-            `<img src="${assignee.avatar}" alt="${assignee.name}" title="${assignee.name}">`
+            `<div class="assignee-initials" title="${assignee.name}">${this.getInitials(assignee.name)}</div>`
         ).join('');
 
         const statusDisplay = task.status.charAt(0).toUpperCase() + task.status.slice(1);
@@ -529,6 +528,16 @@ class TaskBoard {
 
     saveTasks() {
         localStorage.setItem('taskBoardTasks', JSON.stringify(this.tasks));
+    }
+
+    // Utility function to extract initials from a name
+    getInitials(name) {
+        if (!name) return '';
+        const nameParts = name.trim().split(' ');
+        if (nameParts.length === 1) {
+            return nameParts[0].charAt(0).toUpperCase();
+        }
+        return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
     }
 
     // Utility methods for demo and development
