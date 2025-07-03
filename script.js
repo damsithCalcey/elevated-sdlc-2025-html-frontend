@@ -35,8 +35,6 @@ class TaskBoard {
                         { name: "John Doe", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=30&h=30&fit=crop&crop=face" },
                         { name: "Jane Smith", avatar: "https://images.unsplash.com/photo-1494790108755-2616b2e2b26b?w=30&h=30&fit=crop&crop=face" }
                     ],
-                    comments: 3,
-                    attachments: 2,
                     createdAt: new Date('2024-01-15')
                 },
                 {
@@ -47,8 +45,6 @@ class TaskBoard {
                     assignees: [
                         { name: "Alice Johnson", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=30&h=30&fit=crop&crop=face" }
                     ],
-                    comments: 1,
-                    attachments: 4,
                     createdAt: new Date('2024-01-16')
                 },
                 {
@@ -59,8 +55,6 @@ class TaskBoard {
                     assignees: [
                         { name: "Bob Wilson", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=30&h=30&fit=crop&crop=face" }
                     ],
-                    comments: 5,
-                    attachments: 7,
                     createdAt: new Date('2024-01-17')
                 },
                 {
@@ -71,8 +65,6 @@ class TaskBoard {
                     assignees: [
                         { name: "Charlie Brown", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=30&h=30&fit=crop&crop=face" }
                     ],
-                    comments: 2,
-                    attachments: 1,
                     createdAt: new Date('2024-01-18')
                 },
                 {
@@ -83,8 +75,6 @@ class TaskBoard {
                     assignees: [
                         { name: "Diana Prince", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=30&h=30&fit=crop&crop=face" }
                     ],
-                    comments: 4,
-                    attachments: 3,
                     createdAt: new Date('2024-01-19')
                 },
                 {
@@ -95,8 +85,6 @@ class TaskBoard {
                     assignees: [
                         { name: "Eve Adams", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=30&h=30&fit=crop&crop=face" }
                     ],
-                    comments: 1,
-                    attachments: 2,
                     createdAt: new Date('2024-01-20')
                 },
                 {
@@ -107,8 +95,6 @@ class TaskBoard {
                     assignees: [
                         { name: "Frank Miller", avatar: "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=30&h=30&fit=crop&crop=face" }
                     ],
-                    comments: 6,
-                    attachments: 1,
                     createdAt: new Date('2024-01-21')
                 },
                 {
@@ -119,8 +105,6 @@ class TaskBoard {
                     assignees: [
                         { name: "Grace Kelly", avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=30&h=30&fit=crop&crop=face" }
                     ],
-                    comments: 2,
-                    attachments: 0,
                     createdAt: new Date('2024-01-22')
                 },
                 {
@@ -131,8 +115,6 @@ class TaskBoard {
                     assignees: [
                         { name: "Henry Ford", avatar: "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=30&h=30&fit=crop&crop=face" }
                     ],
-                    comments: 3,
-                    attachments: 5,
                     createdAt: new Date('2024-01-23')
                 },
                 {
@@ -143,8 +125,6 @@ class TaskBoard {
                     assignees: [
                         { name: "Ivy Chen", avatar: "https://images.unsplash.com/photo-1494790108755-2616b2e2b26b?w=30&h=30&fit=crop&crop=face" }
                     ],
-                    comments: 8,
-                    attachments: 3,
                     createdAt: new Date('2024-01-24')
                 },
                 {
@@ -155,8 +135,6 @@ class TaskBoard {
                     assignees: [
                         { name: "Jack Wilson", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=30&h=30&fit=crop&crop=face" }
                     ],
-                    comments: 2,
-                    attachments: 1,
                     createdAt: new Date('2024-01-25')
                 },
                 {
@@ -167,8 +145,6 @@ class TaskBoard {
                     assignees: [
                         { name: "Kate Brown", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=30&h=30&fit=crop&crop=face" }
                     ],
-                    comments: 12,
-                    attachments: 8,
                     createdAt: new Date('2024-01-26')
                 }
             ];
@@ -266,8 +242,6 @@ class TaskBoard {
                     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=30&h=30&fit=crop&crop=face" 
                 }
             ],
-            comments: 0,
-            attachments: 0,
             createdAt: new Date()
         };
 
@@ -384,10 +358,6 @@ class TaskBoard {
                 <div class="task-assignees">
                     ${assigneesHTML}
                 </div>
-                <div class="task-stats">
-                    <span><i class="fas fa-comment"></i>${task.comments}</span>
-                    <span><i class="fas fa-paperclip"></i>${task.attachments}</span>
-                </div>
             </div>
         `;
 
@@ -497,8 +467,6 @@ class TaskBoard {
             Status: ${task.status}
             Created: ${task.createdAt.toLocaleDateString()}
             Assignees: ${task.assignees.map(a => a.name).join(', ')}
-            Comments: ${task.comments}
-            Attachments: ${task.attachments}
         `;
         alert(details);
     }

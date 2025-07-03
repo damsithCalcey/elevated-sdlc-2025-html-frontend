@@ -495,7 +495,6 @@ body {
 
 .task-footer {
     display: flex;
-    justify-content: space-between;
     align-items: center;
     margin-top: 4px;
 }
@@ -518,25 +517,6 @@ body {
 
 .task-assignees img:first-child {
     margin-left: 0;
-}
-
-.task-stats {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    font-size: 12px;
-    color: #94a3b8;
-    font-weight: 500;
-}
-
-.task-stats span {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.task-stats i {
-    font-size: 11px;
 }
 
 /* Modal Styles */
