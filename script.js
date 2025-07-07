@@ -1,607 +1,506 @@
-// Task Board Application
+// Application state is managed via this class
 class TaskBoard {
   constructor() {
-    this.tasks = [];
-    this.currentFilter = "all";
-    this.draggedTask = null;
+    this.tasks = [
+      {
+        id: 1,
+        title: "Grocery shopping for the week.",
+        description: "Complete the project report by summarizing key findings.",
+        dueDate: "2025-07-01",
+        completed: false,
+      },
+      {
+        id: 2,
+        title: "Read two chapters of the new novel.",
+        description: "Schedule a brainstorming session to generate new ideas.",
+        dueDate: "2025-07-02",
+        completed: false,
+      },
+      {
+        id: 3,
+        title: "Finish the report for the marketing team.",
+        description: "Prepare a presentation for the marketing team meeting.",
+        dueDate: "2025-08-01",
+        completed: false,
+      },
+      {
+        id: 4,
+        title: "Call Mom to catch up.",
+        description:
+          "Review the budget proposal and suggest any necessary adjustments.",
+        dueDate: "2025-08-01",
+        completed: false,
+      },
+    ];
+
+    this.showCompleted = false;
+    this.currentTaskId = null;
 
     this.init();
-    this.loadDemoData();
-    this.attachEventListeners();
-    this.renderTasks();
   }
 
   init() {
-    // Load tasks from localStorage
-    const savedTasks = localStorage.getItem("taskBoardTasks");
-    if (savedTasks) {
-      this.tasks = JSON.parse(savedTasks);
-    }
-
-    // Update task counts
-    this.updateTaskCounts();
+    this.bindEvents();
+    this.renderTasks();
   }
 
-  // Demo data for showcasing the app
-  loadDemoData() {
-    if (this.tasks.length === 0) {
-      this.tasks = [
-        {
-          id: 1,
-          title: "Wash the car",
-          description: "Take the car to the car wash place in the town",
-          status: "in_progress",
-          created_date: "2025-07-03T14:10:37.282383",
-          due_date: "19/06/2025",
-        },
-        {
-          id: 2,
-          title: "Buy groceries",
-          description: "Fruits, veggies, meat",
-          status: "backlog",
-          created_date: "2025-07-03T14:14:09.095076",
-          due_date: "25/07/2025",
-        },
-        {
-          id: 3,
-          title: "Complete project proposal",
-          description:
-            "Finalize the quarterly project proposal for management review",
-          status: "todo",
-          created_date: "2025-07-03T09:30:15.123456",
-          due_date: "15/07/2025",
-        },
-        {
-          id: 4,
-          title: "Team meeting preparation",
-          description: "Prepare agenda and materials for weekly team meeting",
-          status: "todo",
-          created_date: "2025-07-03T11:45:22.789012",
-          due_date: "10/07/2025",
-        },
-        {
-          id: 5,
-          title: "Update website content",
-          description:
-            "Review and update product descriptions on company website",
-          status: "backlog",
-          created_date: "2025-07-03T16:20:44.345678",
-          due_date: "30/07/2025",
-        },
-        {
-          id: 6,
-          title: "Code review",
-          description: "Review pull requests from development team",
-          status: "in_progress",
-          created_date: "2025-07-03T13:15:33.567890",
-          due_date: "08/07/2025",
-        },
-        {
-          id: 7,
-          title: "Client presentation",
-          description:
-            "Prepare and deliver quarterly results presentation to client",
-          status: "done",
-          created_date: "2025-07-02T10:00:00.000000",
-          due_date: "05/07/2025",
-        },
-        {
-          id: 8,
-          title: "Database backup",
-          description: "Perform monthly database backup and verify integrity",
-          status: "done",
-          created_date: "2025-07-01T08:30:12.234567",
-          due_date: "02/07/2025",
-        },
-      ];
-      this.saveTasks();
-    }
-  }
+  bindEvents() {
+    // DOM element references
+    const createModal = document.getElementById("createTaskModal");
+    const viewModal = document.getElementById("viewTaskModal");
+    const editModal = document.getElementById("editTaskModal");
+    const confirmModal = document.getElementById("confirmModal");
+    const confirmCompleteModal = document.getElementById(
+      "confirmCompleteModal"
+    );
 
-  attachEventListeners() {
-    // Modal controls
-    const modalOverlay = document.getElementById("modalOverlay");
-    const closeModal = document.getElementById("closeModal");
-    const cancelBtn = document.getElementById("cancelBtn");
-    const taskForm = document.getElementById("taskForm");
+    const createBtn = document.querySelector(".create-task-btn");
+    const closeBtns = document.querySelectorAll(".close");
+    const cancelBtns = document.querySelectorAll(".btn-cancel");
+    const editTaskBtn = document.getElementById("editTaskBtn");
+    const deleteTaskBtn = document.getElementById("deleteTaskBtn");
+    const markCompletedBtn = document.getElementById("markCompletedBtn");
+    const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+    const confirmCancelBtn = document.getElementById("confirmCancelBtn");
+    const confirmCompleteBtn = document.getElementById("confirmCompleteBtn");
+    const confirmCompleteCancelBtn = document.getElementById(
+      "confirmCompleteCancelBtn"
+    );
 
-    closeModal.addEventListener("click", () => this.closeModal());
-    cancelBtn.addEventListener("click", () => this.closeModal());
-    modalOverlay.addEventListener("click", (e) => {
-      if (e.target === modalOverlay) this.closeModal();
+    const createTaskForm = document.getElementById("createTaskForm");
+    const editTaskForm = document.getElementById("editTaskForm");
+
+    createBtn.addEventListener("click", () => {
+      this.openModal(createModal);
     });
-    taskForm.addEventListener("submit", (e) => this.handleFormSubmit(e));
 
-    // Add task buttons in each column
-    const addTaskBtns = document.querySelectorAll(".add-task-btn");
-    addTaskBtns.forEach((btn) => {
+    // Close modal function
+    const closeModal = (modalReference) => {
+      modalReference.style.display = "none";
+      document.body.style.overflow = "auto";
+      // Reset forms
+      if (modalReference === createModal) createTaskForm.reset();
+      if (modalReference === editModal) editTaskForm.reset();
+    };
+
+    // Close button events
+    closeBtns.forEach((btn) => {
       btn.addEventListener("click", (e) => {
-        const status = e.target.closest(".add-task-btn").dataset.status;
-        this.openModal(status);
+        const modal = e.target.closest(".modal");
+        closeModal(modal);
       });
     });
 
-    // Search functionality
-    const searchInput = document.getElementById("searchInput");
-    searchInput.addEventListener("input", (e) =>
-      this.handleSearch(e.target.value)
-    );
-
-    // View controls
-    const viewBtns = document.querySelectorAll(".view-btn");
-    viewBtns.forEach((btn) => {
-      btn.addEventListener("click", () => this.handleViewChange(btn));
+    // Cancel button events
+    cancelBtns.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const modal = e.target.closest(".modal");
+        closeModal(modal);
+      });
     });
 
-    // Navigation items
-    const navItems = document.querySelectorAll(".nav-item");
-    navItems.forEach((item) => {
-      item.addEventListener("click", () => this.handleNavigation(item));
+    // Confirmation modal cancel buttons
+    confirmCancelBtn.addEventListener("click", () => {
+      closeModal(confirmModal);
     });
 
-    // Tab buttons
-    const tabBtns = document.querySelectorAll(".tab-btn");
-    tabBtns.forEach((btn) => {
-      btn.addEventListener("click", () => this.handleTabChange(btn));
+    confirmCompleteCancelBtn.addEventListener("click", () => {
+      closeModal(confirmCompleteModal);
     });
 
-    // Keyboard shortcuts
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") this.closeModal();
-      if (e.ctrlKey && e.key === "k") {
-        e.preventDefault();
-        document.getElementById("searchInput").focus();
+    // Close modal on outside click
+    window.addEventListener("click", (e) => {
+      if (e.target.classList.contains("modal")) {
+        closeModal(e.target);
       }
     });
+
+    // Form submissions
+    createTaskForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      this.createTask();
+      closeModal(createModal);
+    });
+
+    editTaskForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      this.updateTask();
+      closeModal(editModal);
+    });
+
+    // Task actions
+    editTaskBtn.addEventListener("click", () => {
+      closeModal(viewModal);
+      this.openEditModal();
+    });
+
+    deleteTaskBtn.addEventListener("click", () => {
+      closeModal(editModal);
+      this.openConfirmModal();
+    });
+
+    confirmDeleteBtn.addEventListener("click", () => {
+      this.deleteTask(this.currentTaskId);
+      closeModal(confirmModal);
+    });
+
+    markCompletedBtn.addEventListener("click", () => {
+      closeModal(viewModal);
+      const task = this.tasks.find((t) => t.id === this.currentTaskId);
+      if (task && !task.completed) {
+        this.openConfirmCompleteModal();
+      } else {
+        this.toggleTask(this.currentTaskId);
+      }
+    });
+
+    confirmCompleteBtn.addEventListener("click", () => {
+      this.toggleTask(this.currentTaskId);
+      closeModal(confirmCompleteModal);
+    });
+
+    const searchInput = document.querySelector(".search-box input");
+    searchInput.addEventListener("input", (e) => {
+      this.searchTasks(e.target.value);
+    });
+
+    // show only completed tasks toggle
+    const viewBtn = document.querySelector(".view-btn");
+    viewBtn.addEventListener("click", () => {
+      this.toggleShowCompleted();
+      if (this.showCompleted) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+
+    // Sidebar navigation (not implemented)
+    const navItems = document.querySelectorAll(".nav-section li");
+    navItems.forEach((item) => {
+      item.addEventListener("click", () => {
+        // Remove active class from all items
+        navItems.forEach((nav) => nav.classList.remove("active"));
+        // Add active class to clicked item (except add project)
+        if (!item.classList.contains("add-project")) {
+          item.classList.add("active");
+        }
+      });
+    });
   }
 
-  openModal(status = "backlog") {
-    const modalOverlay = document.getElementById("modalOverlay");
-    modalOverlay.classList.add("active");
-    document.getElementById("taskTitle").focus();
-
-    // Set the default status based on which column's add button was clicked
-    document.getElementById("taskStatus").value = status;
-  }
-
-  closeModal() {
-    const modalOverlay = document.getElementById("modalOverlay");
-    modalOverlay.classList.remove("active");
-    document.getElementById("taskForm").reset();
-  }
-
-  handleFormSubmit(e) {
-    e.preventDefault();
-
-    const title = document.getElementById("taskTitle").value.trim();
-    const description = document.getElementById("taskDescription").value.trim();
-    const status = document.getElementById("taskStatus").value;
-
-    if (!title) return;
+  createTask() {
+    const title = document.getElementById("createTaskTitle").value;
+    const description = document.getElementById("createTaskDescription").value;
+    const dueDate = document.getElementById("createTaskDate").value;
 
     const newTask = {
       id: Date.now(),
       title,
       description,
-      status,
-      created_date: new Date().toISOString(),
-      due_date: "",
+      dueDate,
+      completed: false,
     };
 
     this.tasks.push(newTask);
-    this.saveTasks();
     this.renderTasks();
-    this.updateTaskCounts();
-    this.closeModal();
-
-    // Show success message
-    this.showNotification("Task added successfully!", "success");
+    this.showNotification("Task created successfully!");
   }
 
-  handleSearch(query) {
-    const filteredTasks = this.tasks.filter(
-      (task) =>
-        task.title.toLowerCase().includes(query.toLowerCase()) ||
-        task.description.toLowerCase().includes(query.toLowerCase())
-    );
-    this.renderTasks(filteredTasks);
-  }
+  updateTask() {
+    const title = document.getElementById("editTaskTitle").value;
+    const description = document.getElementById("editTaskDescription").value;
+    const dueDate = document.getElementById("editTaskDate").value;
 
-  handleViewChange(btn) {
-    document
-      .querySelectorAll(".view-btn")
-      .forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-
-    // Here you could implement different view modes
-    // For now, we'll just show a notification
-    const viewType = btn.textContent.trim();
-    this.showNotification(`Switched to ${viewType}`, "info");
-  }
-
-  handleNavigation(item) {
-    document
-      .querySelectorAll(".nav-item")
-      .forEach((i) => i.classList.remove("active"));
-    item.classList.add("active");
-
-    const navText = item.querySelector("span").textContent;
-    this.showNotification(`Navigated to ${navText}`, "info");
-  }
-
-  handleTabChange(btn) {
-    document
-      .querySelectorAll(".tab-btn")
-      .forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-
-    const tabText = btn.textContent.trim();
-    this.showNotification(`Switched to ${tabText} view`, "info");
-  }
-
-  renderTasks(tasksToRender = this.tasks) {
-    const columns = {
-      backlog: document.getElementById("backlog-tasks"),
-      todo: document.getElementById("todo-tasks"),
-      in_progress: document.getElementById("progress-tasks"),
-      done: document.getElementById("done-tasks"),
-    };
-
-    // Clear all columns
-    Object.values(columns).forEach((column) => {
-      column.innerHTML = "";
-    });
-
-    // Group tasks by status
-    const tasksByStatus = {
-      backlog: [],
-      todo: [],
-      in_progress: [],
-      done: [],
-    };
-
-    tasksToRender.forEach((task) => {
-      if (tasksByStatus[task.status]) {
-        tasksByStatus[task.status].push(task);
-      }
-    });
-
-    // Render tasks in each column
-    Object.entries(tasksByStatus).forEach(([status, tasks]) => {
-      const column = columns[status];
-      if (tasks.length === 0) {
-        column.innerHTML = this.getEmptyStateHTML(status);
-      } else {
-        tasks.forEach((task) => {
-          const taskElement = this.createTaskElement(task);
-          column.appendChild(taskElement);
-        });
-      }
-    });
-
-    this.attachDragAndDropListeners();
-  }
-
-  createTaskElement(task) {
-    const taskCard = document.createElement("div");
-    taskCard.className = "task-card";
-    taskCard.draggable = true;
-    taskCard.dataset.taskId = task.id;
-
-    const statusDisplay = this.getStatusDisplay(task.status);
-    const dueDateDisplay = task.due_date ? `Due: ${task.due_date}` : "";
-
-    console.log("dueDateDisplay", dueDateDisplay);
-
-    taskCard.innerHTML = `
-            <div class="task-header">
-                <h4 class="task-title">${task.title}</h4>
-                <button class="task-menu" onclick="taskBoard.showTaskMenu(${
-                  task.id
-                })">
-                    <i class="fas fa-ellipsis-h"></i>
-                </button>
-            </div>
-            <div class="task-content">
-                <p class="task-description">${task.description}</p>
-            </div>
-            <div class="task-labels">
-                <span class="task-label ${task.status}">${statusDisplay}</span>
-                ${
-                  dueDateDisplay
-                    ? `<span class="task-due-date">${dueDateDisplay}</span>`
-                    : ""
-                }
-            </div>
-        `;
-
-    // Add click listener for task details
-    taskCard.addEventListener("click", (e) => {
-      if (!e.target.closest(".task-menu")) {
-        this.showTaskDetails(task);
-      }
-    });
-
-    return taskCard;
-  }
-
-  getStatusDisplay(status) {
-    const statusMap = {
-      backlog: "Backlog",
-      todo: "To Do",
-      in_progress: "In Progress",
-      done: "Done",
-    };
-    return statusMap[status] || status;
-  }
-
-  getEmptyStateHTML(status) {
-    const messages = {
-      backlog: {
-        icon: "fas fa-inbox",
-        text: "No backlog tasks",
-        subtext: "Tasks will appear here when added to backlog",
-      },
-      todo: {
-        icon: "fas fa-clipboard-list",
-        text: "No todo tasks",
-        subtext: "Ready to start tasks will appear here",
-      },
-      in_progress: {
-        icon: "fas fa-cog",
-        text: "No tasks in progress",
-        subtext: "Active tasks will appear here",
-      },
-      done: {
-        icon: "fas fa-check-circle",
-        text: "No completed tasks",
-        subtext: "Finished tasks will appear here",
-      },
-    };
-
-    const message = messages[status];
-    return `
-            <div class="empty-state">
-                <i class="${message.icon}"></i>
-                <h3>${message.text}</h3>
-                <p>${message.subtext}</p>
-            </div>
-        `;
-  }
-
-  attachDragAndDropListeners() {
-    const taskCards = document.querySelectorAll(".task-card");
-    const columns = document.querySelectorAll(".column-content");
-
-    taskCards.forEach((card) => {
-      card.addEventListener("dragstart", (e) => {
-        this.draggedTask = e.target;
-        e.target.classList.add("dragging");
-      });
-
-      card.addEventListener("dragend", (e) => {
-        e.target.classList.remove("dragging");
-        this.draggedTask = null;
-      });
-    });
-
-    columns.forEach((column) => {
-      column.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        column.parentElement.classList.add("drag-over");
-      });
-
-      column.addEventListener("dragleave", (e) => {
-        if (!column.contains(e.relatedTarget)) {
-          column.parentElement.classList.remove("drag-over");
-        }
-      });
-
-      column.addEventListener("drop", (e) => {
-        e.preventDefault();
-        column.parentElement.classList.remove("drag-over");
-
-        if (this.draggedTask) {
-          const taskId = parseInt(this.draggedTask.dataset.taskId);
-          const newStatus = column.parentElement.dataset.status;
-          this.updateTaskStatus(taskId, newStatus);
-        }
-      });
-    });
-  }
-
-  updateTaskStatus(taskId, newStatus) {
-    const task = this.tasks.find((t) => t.id === taskId);
-    if (task && task.status !== newStatus) {
-      task.status = newStatus;
-      this.saveTasks();
-      this.renderTasks();
-      this.updateTaskCounts();
-      this.showNotification(`Task moved to ${newStatus}`, "success");
-    }
-  }
-
-  showTaskMenu(taskId) {
-    // Simple context menu implementation
-    const task = this.tasks.find((t) => t.id === taskId);
+    const task = this.tasks.find((t) => t.id === this.currentTaskId);
     if (task) {
-      const action = confirm(
-        `Task: ${task.title}\n\nChoose action:\nOK = Delete task\nCancel = Close menu`
-      );
-      if (action) {
-        this.deleteTask(taskId);
-      }
+      task.title = title;
+      task.description = description;
+      task.dueDate = dueDate;
+      this.renderTasks();
+      this.showNotification("Task updated successfully!");
     }
+  }
+
+  openModal(modal) {
+    modal.style.display = "block";
+    document.body.style.overflow = "hidden";
+  }
+
+  openViewModal(taskId) {
+    const task = this.tasks.find((t) => t.id === taskId);
+    if (!task) return;
+
+    this.currentTaskId = taskId;
+
+    // Populate view modal
+    document.getElementById("viewTaskTitle").textContent = task.title;
+    document.getElementById("viewTaskDescription").textContent =
+      task.description || "No description";
+    document.getElementById("viewTaskDate").textContent =
+      this.formatDateForDisplay(task.dueDate);
+
+    // Update mark completed button text
+    const markBtn = document.getElementById("markCompletedBtn");
+    markBtn.textContent = task.completed ? "Mark Incomplete" : "Mark Completed";
+    markBtn.className = task.completed ? "btn-cancel" : "btn-success";
+
+    this.openModal(document.getElementById("viewTaskModal"));
+  }
+
+  openEditModal() {
+    const task = this.tasks.find((t) => t.id === this.currentTaskId);
+    if (!task) return;
+
+    // Populate edit modal
+    document.getElementById("editTaskTitle").value = task.title;
+    document.getElementById("editTaskDescription").value =
+      task.description || "";
+    document.getElementById("editTaskDate").value = task.dueDate;
+
+    this.openModal(document.getElementById("editTaskModal"));
+  }
+
+  openConfirmModal() {
+    this.openModal(document.getElementById("confirmModal"));
+  }
+
+  openConfirmCompleteModal() {
+    this.openModal(document.getElementById("confirmCompleteModal"));
+  }
+
+  formatDateForDisplay(dateString) {
+    const date = new Date(dateString);
+    const options = { day: "2-digit", month: "long", year: "numeric" };
+    return date.toLocaleDateString("en-GB", options);
   }
 
   deleteTask(taskId) {
-    this.tasks = this.tasks.filter((t) => t.id !== taskId);
-    this.saveTasks();
+    this.tasks = this.tasks.filter((task) => task.id !== taskId);
     this.renderTasks();
-    this.updateTaskCounts();
-    this.showNotification("Task deleted successfully!", "success");
+    this.showNotification("Task deleted successfully!");
   }
 
-  showTaskDetails(task) {
-    const createdDate = new Date(task.created_date).toLocaleDateString();
-    const details = `
-            Title: ${task.title}
-            Description: ${task.description}
-            Status: ${this.getStatusDisplay(task.status)}
-            Created: ${createdDate}
-            ${task.due_date ? `Due Date: ${task.due_date}` : "No due date set"}
-        `;
-    alert(details);
+  toggleTask(taskId) {
+    const task = this.tasks.find((t) => t.id === taskId);
+    if (task) {
+      task.completed = !task.completed;
+      this.renderTasks();
+    }
   }
 
-  updateTaskCounts() {
-    const counts = {
-      backlog: this.tasks.filter((t) => t.status === "backlog").length,
-      todo: this.tasks.filter((t) => t.status === "todo").length,
-      in_progress: this.tasks.filter((t) => t.status === "in_progress").length,
-      done: this.tasks.filter((t) => t.status === "done").length,
-    };
+  toggleShowCompleted() {
+    this.showCompleted = !this.showCompleted;
+    this.renderTasks();
+  }
 
-    document.querySelectorAll(".task-count").forEach((element, index) => {
-      const statuses = ["backlog", "todo", "in_progress", "done"];
-      element.textContent = counts[statuses[index]];
+  searchTasks(query) {
+    const taskCards = document.querySelectorAll(".task-card");
+
+    taskCards.forEach((card) => {
+      const title = card.querySelector("h3").textContent.toLowerCase();
+      const description = card.querySelector("p").textContent.toLowerCase();
+      const searchTerm = query.toLowerCase();
+
+      if (title.includes(searchTerm) || description.includes(searchTerm)) {
+        card.style.display = "block";
+      } else {
+        card.style.display = "none";
+      }
     });
   }
 
-  showNotification(message, type = "info") {
+  formatDate(dateString) {
+    const date = new Date(dateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const taskDate = new Date(date);
+    taskDate.setHours(0, 0, 0, 0);
+
+    const options = { day: "2-digit", month: "short", year: "numeric" };
+    const formattedDate = date.toLocaleDateString("en-GB", options);
+
+    // Determine if date is overdue or upcoming
+    const isOverdue = taskDate < today;
+    const className = isOverdue ? "overdue" : "upcoming";
+
+    return { formatted: formattedDate, className };
+  }
+
+  renderTasks() {
+    const taskBoard = document.querySelector(".task-board");
+
+    // Filter tasks based on showCompleted setting
+    const tasksToShow = this.showCompleted
+      ? this.tasks
+      : this.tasks.filter((task) => !task.completed);
+
+    taskBoard.innerHTML = tasksToShow
+      .map((task) => {
+        const dateInfo = this.formatDate(task.dueDate);
+
+        return `
+                <div class="task-card ${
+                  task.completed ? "completed" : ""
+                }" data-task-id="${task.id}" onclick="taskBoard.openViewModal(${
+          task.id
+        })">
+                    <div class="task-header">
+                        <h3>${task.title}</h3>
+                        <div class="task-date ${dateInfo.className}">${
+          dateInfo.formatted
+        }</div>
+                    </div>
+                    <p>${task.description || "No description"}</p>
+                </div>
+            `;
+      })
+      .join("");
+  }
+
+  showNotification(message) {
     // Create notification element
     const notification = document.createElement("div");
-    notification.className = `notification ${type}`;
     notification.style.cssText = `
             position: fixed;
             top: 20px;
             right: 20px;
-            background: ${
-              type === "success"
-                ? "#10b981"
-                : type === "error"
-                ? "#ef4444"
-                : "#3b82f6"
-            };
+            background: #10b981;
             color: white;
             padding: 12px 20px;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 3000;
-            animation: slideInRight 0.3s ease-out;
-            max-width: 300px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
             font-size: 14px;
+            font-weight: 500;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
         `;
     notification.textContent = message;
 
-    // Add styles for animation
-    const style = document.createElement("style");
-    style.textContent = `
-            @keyframes slideInRight {
-                from { opacity: 0; transform: translateX(100%); }
-                to { opacity: 1; transform: translateX(0); }
-            }
-        `;
-    document.head.appendChild(style);
-
     document.body.appendChild(notification);
 
-    // Remove notification after 3 seconds
+    // Animate in
     setTimeout(() => {
-      notification.style.animation = "slideInRight 0.3s ease-out reverse";
+      notification.style.transform = "translateX(0)";
+    }, 100);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+      notification.style.transform = "translateX(100%)";
       setTimeout(() => {
         document.body.removeChild(notification);
-        document.head.removeChild(style);
       }, 300);
     }, 3000);
-  }
-
-  saveTasks() {
-    localStorage.setItem("taskBoardTasks", JSON.stringify(this.tasks));
-  }
-
-  // Utility methods for demo and development
-  addDemoData() {
-    this.loadDemoData();
-    this.renderTasks();
-    this.updateTaskCounts();
-    this.showNotification("Demo data loaded!", "success");
-  }
-
-  clearAllTasks() {
-    if (
-      confirm(
-        "Are you sure you want to clear all tasks? This cannot be undone."
-      )
-    ) {
-      this.tasks = [];
-      this.saveTasks();
-      this.renderTasks();
-      this.updateTaskCounts();
-      this.showNotification("All tasks cleared!", "success");
-    }
-  }
-
-  exportTasks() {
-    const dataStr = JSON.stringify(this.tasks, null, 2);
-    const dataBlob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "tasks-export.json";
-    link.click();
-    URL.revokeObjectURL(url);
-    this.showNotification("Tasks exported!", "success");
-  }
-
-  getTaskStats() {
-    const stats = {
-      total: this.tasks.length,
-      byStatus: {},
-      completed: this.tasks.filter((t) => t.status === "done").length,
-    };
-
-    ["backlog", "todo", "in_progress", "done"].forEach((status) => {
-      stats.byStatus[status] = this.tasks.filter(
-        (t) => t.status === status
-      ).length;
-    });
-
-    console.table(stats);
-    return stats;
   }
 }
 
 // Initialize the application
-let taskBoard;
+const taskBoard = new TaskBoard();
 
-document.addEventListener("DOMContentLoaded", () => {
-  taskBoard = new TaskBoard();
+document.addEventListener("DOMContentLoaded", function () {
+  // Animate task cards on load
+  const taskCards = document.querySelectorAll(".task-card");
+  taskCards.forEach((card, index) => {
+    card.style.opacity = "0";
+    card.style.transform = "translateY(20px)";
 
-  // Make utility functions available globally for console access
-  window.addDemoData = () => taskBoard.addDemoData();
-  window.clearAllTasks = () => taskBoard.clearAllTasks();
-  window.exportTasks = () => taskBoard.exportTasks();
-  window.getTaskStats = () => taskBoard.getTaskStats();
-
-  console.log("Task Board Application Loaded!");
-  console.log("Available console commands:");
-  console.log("- addDemoData() - Load demo tasks");
-  console.log("- clearAllTasks() - Clear all tasks");
-  console.log("- exportTasks() - Export tasks to JSON");
-  console.log("- getTaskStats() - View task statistics");
-});
-
-// Service Worker for offline functionality (optional)
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/sw.js")
-      .then((registration) => {
-        console.log("SW registered: ", registration);
-      })
-      .catch((registrationError) => {
-        console.log("SW registration failed: ", registrationError);
-      });
+    setTimeout(() => {
+      card.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+      card.style.opacity = "1";
+      card.style.transform = "translateY(0)";
+    }, index * 100);
   });
-}
+
+  // Add keyboard shortcuts
+  document.addEventListener("keydown", function (e) {
+    // Ctrl/Cmd + N to create new task
+    if ((e.ctrlKey || e.metaKey) && e.key === "n") {
+      e.preventDefault();
+      document.querySelector(".create-task-btn").click();
+    }
+
+    // Escape to close modal
+    if (e.key === "Escape") {
+      const modal = document.getElementById("taskModal");
+      if (modal.style.display === "block") {
+        modal.style.display = "none";
+        document.body.style.overflow = "auto";
+      }
+    }
+  });
+
+  // Add drag and drop functionality for task reordering
+  let draggedElement = null;
+
+  document.addEventListener("dragstart", function (e) {
+    if (e.target.classList.contains("task-card")) {
+      draggedElement = e.target;
+      e.target.style.opacity = "0.5";
+    }
+  });
+
+  document.addEventListener("dragend", function (e) {
+    if (e.target.classList.contains("task-card")) {
+      e.target.style.opacity = "1";
+      draggedElement = null;
+    }
+  });
+
+  document.addEventListener("dragover", function (e) {
+    e.preventDefault();
+  });
+
+  document.addEventListener("drop", function (e) {
+    e.preventDefault();
+    if (draggedElement && e.target.classList.contains("task-card")) {
+      const taskBoard = e.target.closest(".task-board");
+      const afterElement = getDragAfterElement(taskBoard, e.clientY);
+
+      if (afterElement == null) {
+        taskBoard.appendChild(draggedElement);
+      } else {
+        taskBoard.insertBefore(draggedElement, afterElement);
+      }
+    }
+  });
+
+  function getDragAfterElement(container, y) {
+    const draggableElements = [
+      ...container.querySelectorAll(".task-card:not(.dragging)"),
+    ];
+
+    return draggableElements.reduce(
+      (closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      },
+      { offset: Number.NEGATIVE_INFINITY }
+    ).element;
+  }
+
+  // Make task cards draggable
+  const makeCardsDraggable = () => {
+    const cards = document.querySelectorAll(".task-card");
+    cards.forEach((card) => {
+      card.draggable = true;
+    });
+  };
+
+  // Initial call and after each render
+  makeCardsDraggable();
+
+  // Override the renderTasks method to include draggable
+  const originalRenderTasks = taskBoard.renderTasks;
+  taskBoard.renderTasks = function () {
+    originalRenderTasks.call(this);
+    makeCardsDraggable();
+  };
+});
