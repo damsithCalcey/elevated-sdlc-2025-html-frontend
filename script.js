@@ -339,18 +339,11 @@ class TaskBoard {
     taskBoard.innerHTML = tasksToShow
       .map((task) => {
         const dateInfo = this.formatDate(task.dueDate);
-
         return `
-                <div class="task-card ${
-                  task.completed ? "completed" : ""
-                }" data-task-id="${task.id}" onclick="taskBoard.openViewModal(${
-          task.id
-        })">
+                <div class="task-card ${task.completed ? "completed" : ""}" data-task-id="${task.id}" onclick="taskBoard.openViewModal(${task.id})">
                     <div class="task-header">
                         <h3>${task.title}</h3>
-                        <div class="task-date ${dateInfo.className}">${
-          dateInfo.formatted
-        }</div>
+                        <div class="task-date ${dateInfo.className}">${dateInfo.formatted}</div>
                     </div>
                     <p>${task.description || "No description"}</p>
                 </div>
