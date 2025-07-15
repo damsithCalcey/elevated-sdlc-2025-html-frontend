@@ -332,24 +332,22 @@ class TaskBoard {
     const taskBoard = document.querySelector(".task-board");
 
     // Filter tasks based on showCompleted setting
-    const tasksToShow = this.showCompleted
-      ? this.tasks
-      : this.tasks.filter((task) => !task.completed);
+    // const tasksToShow = this.showCompleted
+    //   ? this.tasks
+    //   : this.tasks.filter((task) => !task.completed);
 
-    taskBoard.innerHTML = tasksToShow
-      .map((task) => {
-        const dateInfo = this.formatDate(task.dueDate);
-        return `
-                <div class="task-card ${task.completed ? "completed" : ""}" data-task-id="${task.id}" onclick="taskBoard.openViewModal(${task.id})">
-                    <div class="task-header">
-                        <h3>${task.title}</h3>
-                        <div class="task-date ${dateInfo.className}">${dateInfo.formatted}</div>
-                    </div>
-                    <p>${task.description || "No description"}</p>
-                </div>
-            `;
-      })
-      .join("");
+    taskBoard.innerHTML = this.tasks.map((task) => {
+      const dateInfo = this.formatDate(task.dueDate);
+      return `
+              <div class="task-card ${task.completed ? "completed" : ""}" data-task-id="${task.id}" onclick="taskBoard.openViewModal(${task.id})">
+                  <div class="task-header">
+                      <h3>${task.title}</h3>
+                      <div class="task-date ${dateInfo.className}">${dateInfo.formatted}</div>
+                  </div>
+                  <p>${task.description || "No description"}</p>
+              </div>
+          `;
+    }).join("");
   }
 
   showNotification(message) {
