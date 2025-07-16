@@ -98,7 +98,6 @@ body {
 
 .nav-section li {
     display: flex;
-    align-items: center;
     padding: 8px 20px;
     cursor: pointer;
     transition: all 0.2s ease;
