@@ -276,7 +276,7 @@ class TaskBoard {
   }
 
   deleteTask(taskId) {
-    this.tasks = this.tasks.filter((task) => task.id !== taskId);
+    // this.tasks = this.tasks.filter((task) => task.id !== taskId);
     this.renderTasks();
     this.showNotification("Task deleted successfully!");
   }
