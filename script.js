@@ -237,8 +237,8 @@ class TaskBoard {
     document.getElementById("viewTaskTitle").textContent = task.title;
     document.getElementById("viewTaskDescription").textContent =
       task.description || "No description";
-    document.getElementById("viewTaskDate").textContent =
-      this.formatDateForDisplay(task.dueDate);
+    // document.getElementById("viewTaskDate").textContent =
+    //   this.formatDateForDisplay(task.dueDate);
 
     // Update mark completed button text
     const markBtn = document.getElementById("markCompletedBtn");
