@@ -196,9 +196,9 @@ class TaskBoard {
 
     const newTask = {
       id: Date.now(),
-      title,
-      description,
-      dueDate,
+      title: title,
+      description: description,
+      dueDate: dueDate,
       completed: false,
     };
 
@@ -329,7 +329,7 @@ class TaskBoard {
   }
 
   renderTasks() {
-    const taskBoard = document.querySelector(".task-board");
+    const taskBoard = document.getElementById("task-board");
 
     // Filter tasks based on showCompleted setting
     // const tasksToShow = this.showCompleted
