@@ -42,6 +42,7 @@ class TaskBoard {
   init() {
     this.bindEvents();
     this.renderTasks();
+    this.showWelcomeModal();
   }
 
   bindEvents() {
@@ -187,6 +188,34 @@ class TaskBoard {
         }
       });
     });
+  }
+
+  showWelcomeModal() {
+    const welcomeModal = document.getElementById("welcomeModal");
+    const welcomeCloseBtn = document.getElementById("welcomeCloseBtn");
+    const closeBtn = welcomeModal.querySelector(".close");
+
+    // Function to close welcome modal
+    const closeWelcomeModal = () => {
+      welcomeModal.style.display = "none";
+      document.body.style.overflow = "auto";
+    };
+
+    // Close button event
+    closeBtn.addEventListener("click", closeWelcomeModal);
+    
+    // Got it button event
+    welcomeCloseBtn.addEventListener("click", closeWelcomeModal);
+
+    // Close on outside click
+    welcomeModal.addEventListener("click", (e) => {
+      if (e.target === welcomeModal) {
+        closeWelcomeModal();
+      }
+    });
+
+    // Show the modal
+    this.openModal(welcomeModal);
   }
 
   createTask() {
